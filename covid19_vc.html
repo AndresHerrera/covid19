@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Covid-19 - Valle del Cauca</title>
+	<link rel="stylesheet" href="lib/leaflet/leaflet.css" />
+	<script src="lib/leaflet/leaflet.js"></script>
+	<link rel="stylesheet" href="lib/leaflet-groupedlayercontrol/leaflet.groupedlayercontrol.min.css" />
+	<script src="lib/leaflet-groupedlayercontrol/leaflet.groupedlayercontrol.min.js"></script>
+	<link rel="stylesheet" href="lib/leaflet-markercluster/MarkerCluster.css" />
+	<link rel="stylesheet" href="lib/leaflet-markercluster/MarkerCluster.Default.css" />
+	<script src="lib/leaflet-markercluster/leaflet.markercluster.js"></script>
+	<script src="lib/jquery/jquery-3.4.1.js"></script>
+	
+	<style>
+		html {
+			margin: 0;
+			padding: 0;
+		}
+
+		body {
+			margin: 0;
+			padding: 0;
+		}
+		
+		#mapid { height: calc(100%); width: 100%; position: absolute !important; }
+	</style>
+</head>
+<body>
+
+<div id="mapid"></div>
+
+<script>
+    var sliderControl = null;
+	var basemaps = 
+	{
+		Grayscale: L.tileLayer('http://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png', 
+		{
+			maxZoom: 18,
+			attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+		})
+	};
+  
+	var mymap = L.map('mapid',
+	{
+		zoom: 10
+	}).setView([3.42335,-76.52086], 10);
+	
+	basemaps.Grayscale.addTo(mymap);
+	
+	var markers = L.markerClusterGroup();
+	
+	$.getJSON('data/covid19_vc.geojson', function (data) 
+	{
+		var geoJsonLayer =  L.geoJson(data, 
+		{
+            onEachFeature: function (feature, layer) 
+			{
+				let id_caso = feature.properties.id_caso;
+				let fecha_notifica =feature.properties.fecha_notifica;
+				let ciudad_ubicacion =feature.properties.ciudad_ubicacion;
+				let departamento =feature.properties.departamento;
+				let atencion =feature.properties.atencion;
+				let edad =feature.properties.edad;
+				let sexo =feature.properties.sexo;
+				let tipo =feature.properties.tipo;
+				let estado =feature.properties.estado;
+				let pais_procedencia =feature.properties.pais_procedencia;
+				let fis =feature.properties.fis;
+				let fecha_de_muerte =feature.properties.fecha_de_muerte;
+				let fecha_diagnostico =feature.properties.fecha_diagnostico;
+				let fecha_recuperado =feature.properties.fecha_recuperado;
+				let fecha_reporte_web =feature.properties.fecha_reporte_web;
+				
+				strPopup = `Id caso: ${id_caso}<br>  
+				            Fecha Notificaci&oacute;n: ${fecha_notifica}<br>
+							Ciudad Ubicaci&oacute;n: ${ciudad_ubicacion}<br> 
+							Departamento: ${departamento}<br>
+							Atenci&oacute;n: ${atencion}<br> 
+							Edad: ${edad}<br>
+							Sexo: ${sexo}<br> 
+							Tipo: ${tipo}<br>
+							Estado: ${estado}<br>
+							Pais procedencia: ${pais_procedencia}<br>
+							Fis: ${fis}<br>
+							Fecha Muerte: ${fecha_de_muerte}<br>
+							Fecha Diagnostico: ${fecha_diagnostico}<br>
+							Fecha recuperado: ${fecha_recuperado}<br>
+							Fecha reporte web: ${fecha_reporte_web}`;
+		
+				layer.bindPopup(strPopup)
+			}
+        }); 
+	
+		markers.addLayer(geoJsonLayer);	
+		mymap.addLayer(markers);		
+    });
+	
+	var groupedOverlays = {
+	  "COVID-19": {
+		"Valle del Cauca": markers
+	  }
+	};
+
+	var layerControl=L.control.groupedLayers(basemaps, groupedOverlays);
+	layerControl.addTo(mymap);
+
+	mymap.on('click', function (e) {  });
+	mymap.on('mousedown', function (e) { document.getElementById('mapid').style.cursor = ''; });
+	
+</script>
+
+</body>
+</html>
